@@ -1,6 +1,11 @@
-export const products = [
+import mongoose from "mongoose";
+import dotenv from "dotenv";
+import Product from "../models/Product.js";
+
+dotenv.config();
+
+const products = [
   {
-    id: "1",
     name: "Premium Khilloin Rice",
     description:
       "Organic, aromatic rice grown in the pristine valleys of West Bengal. Rich in nutrients and perfect for healthy meals.",
@@ -13,7 +18,6 @@ export const products = [
     benefits: ["High in fiber", "Gluten-free", "Rich in antioxidants"],
   },
   {
-    id: "2",
     name: "Mixed Nuts Premium",
     description:
       "A perfect blend of almonds, cashews, pistachios, and walnuts. Roasted to perfection for maximum nutrition.",
@@ -26,7 +30,6 @@ export const products = [
     benefits: ["High protein", "Heart healthy", "Rich in omega-3"],
   },
   {
-    id: "3",
     name: "Chia Seeds",
     description:
       "Nutrient-dense superfood seeds packed with omega-3 fatty acids, fiber, and plant-based protein.",
@@ -39,7 +42,6 @@ export const products = [
     benefits: ["High in fiber", "Omega-3 rich", "Plant protein"],
   },
   {
-    id: "4",
     name: "Organic Almonds",
     description:
       "Raw, organic almonds sourced directly from certified farms. Perfect for snacking and cooking.",
@@ -52,7 +54,6 @@ export const products = [
     benefits: ["Vitamin E rich", "Heart healthy", "High protein"],
   },
   {
-    id: "5",
     name: "Pumpkin Seeds",
     description:
       "Roasted pumpkin seeds with a delicious crunch. High in magnesium and zinc for overall wellness.",
@@ -65,7 +66,6 @@ export const products = [
     benefits: ["High in magnesium", "Zinc rich", "Antioxidants"],
   },
   {
-    id: "6",
     name: "Basmati Rice Supreme",
     description:
       "Aged basmati rice with exceptional aroma and taste. Perfect for biryanis and special occasions.",
@@ -78,7 +78,6 @@ export const products = [
     benefits: ["Aged grain", "Low GI", "Aromatic"],
   },
   {
-    id: "7",
     name: "Sunflower Seeds",
     description:
       "Premium sunflower seeds packed with vitamin E and healthy fats. Great for heart health.",
@@ -91,7 +90,6 @@ export const products = [
     benefits: ["Vitamin E", "Healthy fats", "Antioxidants"],
   },
   {
-    id: "8",
     name: "Cashew Nuts Premium",
     description:
       "Creamy, buttery cashews perfect for snacking or adding to your favorite recipes.",
@@ -104,3 +102,28 @@ export const products = [
     benefits: ["Heart healthy", "Rich in copper", "Healthy fats"],
   },
 ];
+
+const seedProducts = async () => {
+  try {
+    const MONGODB_URI =
+      process.env.MONGODB_URI || "mongodb://localhost:27017/villfresh";
+
+    await mongoose.connect(MONGODB_URI);
+    console.log("✅ Connected to MongoDB");
+
+    // Clear existing products
+    await Product.deleteMany({});
+    console.log("🗑️  Cleared existing products");
+
+    // Insert products
+    await Product.insertMany(products);
+    console.log(`✅ Seeded ${products.length} products`);
+
+    process.exit(0);
+  } catch (error) {
+    console.error("❌ Error seeding products:", error);
+    process.exit(1);
+  }
+};
+
+seedProducts();

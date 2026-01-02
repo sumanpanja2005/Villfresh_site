@@ -28,20 +28,12 @@ const Login = () => {
     setLoading(true);
 
     try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-
-      // Check if user exists in localStorage
-      const users = JSON.parse(localStorage.getItem("users") || "[]");
-      const user = users.find(
-        (u) => u.email === formData.email && u.password === formData.password,
-      );
-
-      if (user) {
-        login(user);
+      const result = await login(formData.email, formData.password);
+      
+      if (result.success) {
         navigate("/");
       } else {
-        setError("Invalid email or password");
+        setError(result.error || "Login failed. Please try again.");
       }
     } catch (err) {
       setError("Login failed. Please try again.");

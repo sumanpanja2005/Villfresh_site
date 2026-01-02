@@ -1,12 +1,41 @@
-import React from "react";
+import React, { useState } from "react";
 import { ShoppingCart, Star } from "lucide-react";
 import { useCart } from "../contexts/CartContext";
+import { useAuth } from "../contexts/AuthContext";
+import { useNavigate } from "react-router-dom";
 
 const ProductCard = ({ product }) => {
   const { addToCart } = useCart();
+  const { user, loading: authLoading } = useAuth();
+  const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
 
-  const handleAddToCart = () => {
-    addToCart(product);
+  const handleAddToCart = async () => {
+    // Wait for auth to finish loading
+    if (authLoading) {
+      alert("Please wait, checking authentication...");
+      return;
+    }
+
+    if (!user) {
+      navigate("/login");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      await addToCart(product);
+    } catch (error) {
+      const errorMessage = error.message || "Failed to add to cart";
+      alert(errorMessage);
+      
+      // If session expired, redirect to login
+      if (errorMessage.includes("Session expired") || errorMessage.includes("Invalid token")) {
+        navigate("/login");
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -31,7 +60,9 @@ const ProductCard = ({ product }) => {
           <span className="text-2xl font-bold text-green-600">
             ₹{product.price}
           </span>
-          <span className="text-sm text-gray-500">{product.weight}</span>
+          {product.weight && (
+            <span className="text-sm text-gray-500">{product.weight}</span>
+          )}
         </div>
 
         <div className="flex items-center mb-3">
@@ -43,26 +74,29 @@ const ProductCard = ({ product }) => {
           <span className="text-sm text-gray-600 ml-2">(4.8)</span>
         </div>
 
-        <div className="mb-3">
-          <p className="text-sm text-gray-600 mb-1">Benefits:</p>
-          <div className="flex flex-wrap gap-1">
-            {product.benefits.slice(0, 2).map((benefit, index) => (
-              <span
-                key={index}
-                className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded-full"
-              >
-                {benefit}
-              </span>
-            ))}
+        {product.benefits && product.benefits.length > 0 && (
+          <div className="mb-3">
+            <p className="text-sm text-gray-600 mb-1">Benefits:</p>
+            <div className="flex flex-wrap gap-1">
+              {product.benefits.slice(0, 2).map((benefit, index) => (
+                <span
+                  key={index}
+                  className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded-full"
+                >
+                  {benefit}
+                </span>
+              ))}
+            </div>
           </div>
-        </div>
+        )}
 
         <button
           onClick={handleAddToCart}
-          className="w-full bg-green-600 text-white py-2 px-4 rounded-lg hover:bg-green-700 transition-colors flex items-center justify-center space-x-2"
+          disabled={loading}
+          className="w-full bg-green-600 text-white py-2 px-4 rounded-lg hover:bg-green-700 transition-colors flex items-center justify-center space-x-2 disabled:opacity-50"
         >
           <ShoppingCart className="h-4 w-4" />
-          <span>Add to Cart</span>
+          <span>{loading ? "Adding..." : "Add to Cart"}</span>
         </button>
       </div>
     </div>

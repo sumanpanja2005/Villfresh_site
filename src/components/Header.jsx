@@ -1,8 +1,9 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { ShoppingCart, User, Menu, X, Wheat } from "lucide-react";
+import { ShoppingCart, User, Menu, X, Wheat, Settings } from "lucide-react";
 import { useCart } from "../contexts/CartContext";
 import { useAuth } from "../contexts/AuthContext";
+import Avatar from "./Avatar";
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -20,16 +21,13 @@ const Header = () => {
       <div className="container mx-auto px-1 py-1">
         <div className="flex items-center justify-between">
           {/* Logo */}
-
-          <Link to="/" className="flex items-center space-x-6">
-            <div className="bg-green-600 p-1 rounded-full h-21 w-21 flex items-center justify-center">
-              <img
-                src="https://i.ibb.co/3q7Tkgc/IMG-20250712-WA0000.jpg"
-                alt="VILLFRESH Logo"
-                className="h-20 w-20 rounded-full object-cover"
-              />
-            </div>
-            <span className="text-4xl font-bold text-green-800 ">VILLFRESH</span>
+          <Link to="/" className="flex items-center space-x-3 hover:opacity-90 transition-opacity">
+            <img
+              src="https://i.ibb.co/3q7Tkgc/IMG-20250712-WA0000.jpg"
+              alt="VILLFRESH Logo"
+              className="h-16 w-16 md:h-20 md:w-20 rounded-full object-cover border-2 border-green-600 shadow-md"
+            />
+            <span className="text-2xl md:text-4xl font-bold text-green-800">VILLFRESH</span>
           </Link>
 
           {/* Desktop Navigation */}
@@ -70,12 +68,22 @@ const Header = () => {
             </Link>
 
             {user ? (
-              <div className="flex items-center space-x-2">
+              <div className="flex items-center space-x-3">
+                {user.role === "admin" && (
+                  <Link
+                    to="/admin"
+                    className="flex items-center space-x-2 text-gray-700 hover:text-green-600 transition-colors px-3 py-2 bg-green-50 rounded-lg"
+                    title="Admin Panel"
+                  >
+                    <Settings className="h-5 w-5" />
+                    <span className="text-sm font-medium">Admin</span>
+                  </Link>
+                )}
                 <Link
                   to="/dashboard"
-                  className="flex items-center space-x-1 text-gray-700 hover:text-green-600 transition-colors"
+                  className="flex items-center space-x-2 text-gray-700 hover:text-green-600 transition-colors"
                 >
-                  <User className="h-5 w-5" />
+                  <Avatar name={user.name} size="w-8 h-8" />
                   <span>{user.name}</span>
                 </Link>
                 <button
@@ -147,6 +155,16 @@ const Header = () => {
               </Link>
               {user ? (
                 <div className="flex flex-col space-y-2">
+                  {user.role === "admin" && (
+                    <Link
+                      to="/admin"
+                      className="flex items-center space-x-2 text-gray-700 hover:text-green-600 transition-colors px-3 py-2 bg-green-50 rounded-lg"
+                      onClick={() => setIsMenuOpen(false)}
+                    >
+                      <Settings className="h-5 w-5" />
+                      <span>Admin Panel</span>
+                    </Link>
+                  )}
                   <Link
                     to="/dashboard"
                     className="text-gray-700 hover:text-green-600 transition-colors"

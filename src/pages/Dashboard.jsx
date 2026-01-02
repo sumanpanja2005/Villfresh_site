@@ -1,27 +1,47 @@
 import React, { useState, useEffect } from "react";
 import { useAuth } from "../contexts/AuthContext";
-import { User, Package, Edit3, Camera, Save, X } from "lucide-react";
+import { User, Package, Edit3, Save, X } from "lucide-react";
+import Avatar from "../components/Avatar";
+
+const API_URL = "http://localhost:5000/api";
 
 const Dashboard = () => {
   const { user, updateProfile, logout } = useAuth();
   const [orders, setOrders] = useState([]);
   const [isEditing, setIsEditing] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [editForm, setEditForm] = useState({
     name: user?.name || "",
     email: user?.email || "",
     phone: user?.phone || "",
-    profilePicture: user?.profilePicture || null,
   });
-  const [previewImage, setPreviewImage] = useState(
-    user?.profilePicture || null,
-  );
 
   useEffect(() => {
-    // Load user orders
-    const allOrders = JSON.parse(localStorage.getItem("orders") || "[]");
-    const userOrders = allOrders.filter((order) => order.userId === user?.id);
-    setOrders(userOrders);
+    if (user) {
+      loadOrders();
+    }
   }, [user]);
+
+  const loadOrders = async () => {
+    try {
+      setLoading(true);
+      if (!user) return;
+
+      const response = await fetch(`${API_URL}/orders/my-orders`, {
+        method: "GET",
+        credentials: "include", // Include cookies
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setOrders(data.orders || []);
+      }
+    } catch (error) {
+      console.error("Failed to load orders:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleEditToggle = () => {
     setIsEditing(!isEditing);
@@ -30,9 +50,7 @@ const Dashboard = () => {
         name: user?.name || "",
         email: user?.email || "",
         phone: user?.phone || "",
-        profilePicture: user?.profilePicture || null,
       });
-      setPreviewImage(user?.profilePicture || null);
     }
   };
 
@@ -43,24 +61,13 @@ const Dashboard = () => {
     });
   };
 
-  const handleFileChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        setPreviewImage(e.target.result);
-        setEditForm({
-          ...editForm,
-          profilePicture: e.target.result,
-        });
-      };
-      reader.readAsDataURL(file);
+  const handleSave = async () => {
+    const result = await updateProfile(editForm);
+    if (result.success) {
+      setIsEditing(false);
+    } else {
+      alert(result.error || "Failed to update profile");
     }
-  };
-
-  const handleSave = () => {
-    updateProfile(editForm);
-    setIsEditing(false);
   };
 
   const getStatusColor = (status) => {
@@ -121,36 +128,7 @@ const Dashboard = () => {
               </div>
 
               <div className="text-center mb-6">
-                <div className="relative inline-block">
-                  <div className="w-24 h-24 rounded-full overflow-hidden border-4 border-gray-200 mx-auto mb-4">
-                    {previewImage ? (
-                      <img
-                        src={previewImage}
-                        alt="Profile"
-                        className="w-full h-full object-cover"
-                      />
-                    ) : (
-                      <div className="w-full h-full bg-gray-200 flex items-center justify-center">
-                        <User className="h-12 w-12 text-gray-400" />
-                      </div>
-                    )}
-                  </div>
-                  {isEditing && (
-                    <label
-                      htmlFor="profilePicture"
-                      className="absolute bottom-0 right-0 bg-green-600 text-white p-2 rounded-full cursor-pointer hover:bg-green-700 transition-colors"
-                    >
-                      <Camera className="h-4 w-4" />
-                      <input
-                        id="profilePicture"
-                        type="file"
-                        accept="image/*"
-                        onChange={handleFileChange}
-                        className="hidden"
-                      />
-                    </label>
-                  )}
-                </div>
+                <Avatar name={user?.name || "User"} size="w-24 h-24" className="mx-auto" />
               </div>
 
               {isEditing ? (
@@ -239,7 +217,11 @@ const Dashboard = () => {
                 Order History
               </h2>
 
-              {orders.length === 0 ? (
+              {loading ? (
+                <div className="text-center py-8">
+                  <p className="text-gray-600">Loading orders...</p>
+                </div>
+              ) : orders.length === 0 ? (
                 <div className="text-center py-8">
                   <Package className="h-16 w-16 text-gray-400 mx-auto mb-4" />
                   <p className="text-gray-600">No orders yet</p>
@@ -259,7 +241,7 @@ const Dashboard = () => {
                     >
                       <div className="flex justify-between items-start mb-4">
                         <div>
-                          <h3 className="font-semibold">Order #{order.id}</h3>
+                          <h3 className="font-semibold">Order #{order._id || order.id}</h3>
                           <p className="text-sm text-gray-600">
                             {new Date(order.createdAt).toLocaleDateString()}
                           </p>
@@ -277,9 +259,9 @@ const Dashboard = () => {
                       </div>
 
                       <div className="space-y-2">
-                        {order.items.map((item) => (
+                        {order.items.map((item, index) => (
                           <div
-                            key={item.id}
+                            key={item.productId || item.id || index}
                             className="flex items-center space-x-3"
                           >
                             <img

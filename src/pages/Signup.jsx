@@ -1,7 +1,8 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Mail, Lock, Eye, EyeOff, User, Phone, Upload } from "lucide-react";
+import { Mail, Lock, Eye, EyeOff, User, Phone } from "lucide-react";
 import { useAuth } from "../contexts/AuthContext";
+import Avatar from "../components/Avatar";
 
 const Signup = () => {
   const [formData, setFormData] = useState({
@@ -10,15 +11,13 @@ const Signup = () => {
     phone: "",
     password: "",
     confirmPassword: "",
-    profilePicture: null,
   });
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const [previewImage, setPreviewImage] = useState(null);
 
-  const { login } = useAuth();
+  const { signup } = useAuth();
   const navigate = useNavigate();
 
   const handleChange = (e) => {
@@ -26,23 +25,6 @@ const Signup = () => {
       ...formData,
       [e.target.name]: e.target.value,
     });
-  };
-
-  const handleFileChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      setFormData({
-        ...formData,
-        profilePicture: file,
-      });
-
-      // Create preview
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        setPreviewImage(e.target.result);
-      };
-      reader.readAsDataURL(file);
-    }
   };
 
   const handleSubmit = async (e) => {
@@ -64,36 +46,18 @@ const Signup = () => {
     }
 
     try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      const result = await signup(
+        formData.name,
+        formData.email,
+        formData.phone,
+        formData.password
+      );
 
-      // Check if user already exists
-      const users = JSON.parse(localStorage.getItem("users") || "[]");
-      const existingUser = users.find((u) => u.email === formData.email);
-
-      if (existingUser) {
-        setError("User with this email already exists");
-        setLoading(false);
-        return;
+      if (result.success) {
+        navigate("/");
+      } else {
+        setError(result.error || "Registration failed. Please try again.");
       }
-
-      // Create new user
-      const newUser = {
-        id: Date.now().toString(),
-        name: formData.name,
-        email: formData.email,
-        phone: formData.phone,
-        profilePicture: previewImage,
-        createdAt: new Date().toISOString(),
-      };
-
-      // Save to localStorage
-      users.push({ ...newUser, password: formData.password });
-      localStorage.setItem("users", JSON.stringify(users));
-
-      // Login user
-      login(newUser);
-      navigate("/");
     } catch (err) {
       setError("Registration failed. Please try again.");
     } finally {
@@ -120,38 +84,10 @@ const Signup = () => {
         </div>
 
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-          {/* Profile Picture Upload */}
+          {/* Avatar Preview */}
           <div className="text-center">
-            <div className="relative inline-block">
-              <div className="w-24 h-24 rounded-full overflow-hidden border-4 border-gray-200 mx-auto mb-4">
-                {previewImage ? (
-                  <img
-                    src={previewImage}
-                    alt="Profile preview"
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <div className="w-full h-full bg-gray-200 flex items-center justify-center">
-                    <User className="h-12 w-12 text-gray-400" />
-                  </div>
-                )}
-              </div>
-              <label
-                htmlFor="profilePicture"
-                className="absolute bottom-0 right-0 bg-green-600 text-white p-2 rounded-full cursor-pointer hover:bg-green-700 transition-colors"
-              >
-                <Upload className="h-4 w-4" />
-                <input
-                  id="profilePicture"
-                  name="profilePicture"
-                  type="file"
-                  accept="image/*"
-                  onChange={handleFileChange}
-                  className="hidden"
-                />
-              </label>
-            </div>
-            <p className="text-sm text-gray-600">Upload profile picture</p>
+            <Avatar name={formData.name || "User"} size="w-24 h-24" className="mx-auto" />
+            <p className="text-sm text-gray-600 mt-2">Your profile avatar</p>
           </div>
 
           <div className="space-y-4">

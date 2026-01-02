@@ -20,12 +20,12 @@ const Footer = () => {
               <div className="bg-green-600 p-1 rounded-full">
                 {/* <Wheat className="h-6 w-6 text-white" /> */}
                 <div className="bg-white p-1 rounded-full h-10 w-10 flex items-center justify-center">
-              <img
-                src="https://i.ibb.co/3q7Tkgc/IMG-20250712-WA0000.jpg"
-                alt="VILLFRESH Logo"
-                className="h-10 w-10 rounded-full object-cover"
-              />
-            </div>
+                  <img
+                    src="https://i.ibb.co/3q7Tkgc/IMG-20250712-WA0000.jpg"
+                    alt="VILLFRESH Logo"
+                    className="h-10 w-10 rounded-full object-cover"
+                  />
+                </div>
               </div>
               <span className="text-2xl font-bold">VILLFRESH</span>
             </div>
@@ -131,15 +131,15 @@ const Footer = () => {
             <div className="space-y-3">
               <div className="flex items-center space-x-2">
                 <Phone className="h-5 w-5 text-green-500" />
-                <span className="text-gray-300">+91 9876543210</span>
+                <span className="text-gray-300">+91 9836007262</span>
               </div>
               <div className="flex items-center space-x-2">
                 <Mail className="h-5 w-5 text-green-500" />
-                <span className="text-gray-300">info@villfresh.com</span>
+                <span className="text-gray-300">sumanpanja2005@gmail.com</span>
               </div>
               <div className="flex items-center space-x-2">
                 <MapPin className="h-5 w-5 text-green-500" />
-                <span className="text-gray-300">Kerala, India</span>
+                <span className="text-gray-300">West Bengal, India</span>
               </div>
             </div>
           </div>

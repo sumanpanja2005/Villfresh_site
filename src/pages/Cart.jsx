@@ -40,58 +40,61 @@ const Cart = () => {
           <div className="lg:col-span-2">
             <div className="bg-white rounded-lg shadow-md overflow-hidden">
               <div className="divide-y divide-gray-200">
-                {cart.items.map((item) => (
-                  <div key={item.id} className="p-6">
-                    <div className="flex items-center space-x-4">
-                      <img
-                        src={item.image}
-                        alt={item.name}
-                        className="w-20 h-20 object-cover rounded-lg"
-                      />
-                      <div className="flex-1">
-                        <h3 className="text-lg font-semibold text-gray-800">
-                          {item.name}
-                        </h3>
-                        <p className="text-gray-600">{item.weight}</p>
-                        <p className="text-green-600 font-bold">
-                          ₹{item.price}
-                        </p>
+                {cart.items.map((item, index) => {
+                  const itemId = item.productId || item.id || index;
+                  return (
+                    <div key={itemId} className="p-6">
+                      <div className="flex items-center space-x-4">
+                        <img
+                          src={item.image}
+                          alt={item.name}
+                          className="w-20 h-20 object-cover rounded-lg"
+                        />
+                        <div className="flex-1">
+                          <h3 className="text-lg font-semibold text-gray-800">
+                            {item.name}
+                          </h3>
+                          <p className="text-gray-600">{item.weight || ""}</p>
+                          <p className="text-green-600 font-bold">
+                            ₹{item.price}
+                          </p>
+                        </div>
+                        <div className="flex items-center space-x-3">
+                          <button
+                            onClick={() =>
+                              updateQuantity(itemId, item.quantity - 1)
+                            }
+                            className="p-1 rounded-full hover:bg-gray-100 transition-colors"
+                          >
+                            <Minus className="h-4 w-4" />
+                          </button>
+                          <span className="w-8 text-center font-medium">
+                            {item.quantity}
+                          </span>
+                          <button
+                            onClick={() =>
+                              updateQuantity(itemId, item.quantity + 1)
+                            }
+                            className="p-1 rounded-full hover:bg-gray-100 transition-colors"
+                          >
+                            <Plus className="h-4 w-4" />
+                          </button>
+                          <button
+                            onClick={() => removeFromCart(itemId)}
+                            className="p-1 text-red-600 hover:bg-red-50 rounded-full transition-colors ml-4"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </button>
+                        </div>
                       </div>
-                      <div className="flex items-center space-x-3">
-                        <button
-                          onClick={() =>
-                            updateQuantity(item.id, item.quantity - 1)
-                          }
-                          className="p-1 rounded-full hover:bg-gray-100 transition-colors"
-                        >
-                          <Minus className="h-4 w-4" />
-                        </button>
-                        <span className="w-8 text-center font-medium">
-                          {item.quantity}
+                      <div className="mt-4 flex justify-between items-center">
+                        <span className="text-sm text-gray-600">
+                          Subtotal: ₹{item.price * item.quantity}
                         </span>
-                        <button
-                          onClick={() =>
-                            updateQuantity(item.id, item.quantity + 1)
-                          }
-                          className="p-1 rounded-full hover:bg-gray-100 transition-colors"
-                        >
-                          <Plus className="h-4 w-4" />
-                        </button>
-                        <button
-                          onClick={() => removeFromCart(item.id)}
-                          className="p-1 text-red-600 hover:bg-red-50 rounded-full transition-colors ml-4"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </button>
                       </div>
                     </div>
-                    <div className="mt-4 flex justify-between items-center">
-                      <span className="text-sm text-gray-600">
-                        Subtotal: ₹{item.price * item.quantity}
-                      </span>
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
           </div>

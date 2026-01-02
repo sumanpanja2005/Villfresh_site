@@ -1,18 +1,44 @@
 import React, { useState, useEffect } from "react";
-import { Search, Filter, X } from "lucide-react";
+import { Search, Filter } from "lucide-react";
 import ProductCard from "../components/ProductCard";
-import { products } from "../data/products";
+
+const API_URL = "http://localhost:5000/api";
 
 const Products = () => {
-  const [filteredProducts, setFilteredProducts] = useState(products);
+  const [products, setProducts] = useState([]);
+  const [filteredProducts, setFilteredProducts] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [priceRange, setPriceRange] = useState("all");
   const [sortBy, setSortBy] = useState("name");
   const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [loading, setLoading] = useState(true);
 
+  // Fetch products from API
   useEffect(() => {
-    let filtered = products;
+    fetchProducts();
+  }, []);
+
+  const fetchProducts = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch(`${API_URL}/products`);
+      const data = await response.json();
+      
+      if (response.ok) {
+        setProducts(data.products || []);
+        setFilteredProducts(data.products || []);
+      }
+    } catch (error) {
+      console.error("Failed to fetch products:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Filter and sort products
+  useEffect(() => {
+    let filtered = [...products];
 
     // Filter by search term
     if (searchTerm) {
@@ -65,7 +91,7 @@ const Products = () => {
     }
 
     setFilteredProducts(filtered);
-  }, [searchTerm, selectedCategory, priceRange, sortBy]);
+  }, [products, searchTerm, selectedCategory, priceRange, sortBy]);
 
   const clearFilters = () => {
     setSearchTerm("");
@@ -73,6 +99,16 @@ const Products = () => {
     setPriceRange("all");
     setSortBy("name");
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen py-8 flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-gray-600 text-lg">Loading products...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen py-8">
@@ -216,7 +252,7 @@ const Products = () => {
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {filteredProducts.map((product) => (
-                  <ProductCard key={product.id} product={product} />
+                  <ProductCard key={product._id || product.id} product={product} />
                 ))}
               </div>
             )}

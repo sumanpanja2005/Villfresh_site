@@ -1,6 +1,6 @@
 import React from "react";
 import { Award, Users, Leaf, Heart } from "lucide-react";
-import image from "./../../IMAGE/paddy3.jpg"
+import image from "./../../IMAGE/paddy3.jpg";
 
 const About = () => {
   return (
@@ -36,8 +36,8 @@ const About = () => {
                 families across India.
               </p>
               <p className="text-gray-600 mb-4">
-                We work directly with certified organic farmers in Kerala and
-                surrounding regions, ensuring that every product meets our
+                We work directly with certified organic farmers in West Bengal
+                and surrounding regions, ensuring that every product meets our
                 stringent quality standards. Our commitment to sustainability
                 and fair trade practices helps support local farming communities
                 while delivering exceptional products to your table.

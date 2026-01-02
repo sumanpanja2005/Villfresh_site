@@ -11,11 +11,11 @@ const FloatingContact = () => {
         <div className="absolute bottom-16 right-0 bg-white rounded-lg shadow-lg p-4 w-64 animate-fade-in">
           <div className="space-y-3">
             <a
-              href="tel:+919876543210"
+              href="tel:+919836007262"
               className="flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-50 transition-colors"
             >
               <Phone className="h-5 w-5 text-green-600" />
-              <span className="text-gray-700">+91 9876543210</span>
+              <span className="text-gray-700">+91 9836007262</span>
             </a>
             <a
               href="mailto:sumanpanja2005@gmail.com"
@@ -25,7 +25,7 @@ const FloatingContact = () => {
               <span className="text-gray-700">sumanpanja2005@gmail.com</span>
             </a>
             <a
-              href="https://wa.me/919876543210"
+              href="https://wa.me/919836007262"
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-50 transition-colors"

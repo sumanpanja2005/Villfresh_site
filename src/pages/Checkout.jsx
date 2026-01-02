@@ -4,6 +4,8 @@ import { CreditCard, Truck, MapPin, Phone, Mail, User } from "lucide-react";
 import { useCart } from "../contexts/CartContext";
 import { useAuth } from "../contexts/AuthContext";
 
+const API_URL = "http://localhost:5000/api";
+
 const Checkout = () => {
   const [formData, setFormData] = useState({
     fullName: "",
@@ -14,7 +16,8 @@ const Checkout = () => {
     state: "",
     pincode: "",
     paymentMethod: "upi",
-    upiId: "",
+    upiApp: "", // Selected UPI app (phonepe, googlepay, paytm, etc.)
+    upiId: "", // Optional UPI ID if user wants to specify
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -50,51 +53,102 @@ const Checkout = () => {
         return;
       }
 
-      if (formData.paymentMethod === "upi" && !formData.upiId) {
-        setError("Please enter your UPI ID");
+      if (formData.paymentMethod === "upi" && !formData.upiApp) {
+        setError("Please select a UPI app");
         setLoading(false);
         return;
       }
 
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 2000));
+      if (!user) {
+        setError("Please login to place an order");
+        setLoading(false);
+        return;
+      }
 
-      // Create order
-      const order = {
-        id: Date.now().toString(),
-        userId: user?.id || "guest",
-        items: cart.items,
-        total: cart.total + Math.round(cart.total * 0.05),
-        shippingAddress: {
-          fullName: formData.fullName,
-          email: formData.email,
-          phone: formData.phone,
-          address: formData.address,
-          city: formData.city,
-          state: formData.state,
-          pincode: formData.pincode,
+      // Check if cart is empty
+      if (!cart.items || cart.items.length === 0) {
+        setError("Your cart is empty");
+        setLoading(false);
+        return;
+      }
+
+      // Create order via API
+      const response = await fetch(`${API_URL}/orders`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
         },
-        paymentMethod: formData.paymentMethod,
-        upiId: formData.upiId,
-        status: "confirmed",
-        createdAt: new Date().toISOString(),
-        estimatedDelivery: new Date(
-          Date.now() + 3 * 24 * 60 * 60 * 1000,
-        ).toISOString(),
-      };
+        credentials: "include", // Include cookies
+        body: JSON.stringify({
+          items: cart.items.map((item) => ({
+            id: item.productId || item.id,
+            name: item.name,
+            image: item.image,
+            price: item.price,
+            quantity: item.quantity,
+          })),
+          shippingAddress: {
+            fullName: formData.fullName,
+            email: formData.email || user.email || "",
+            phone: formData.phone,
+            address: formData.address,
+            city: formData.city,
+            state: formData.state,
+            pincode: formData.pincode,
+          },
+          paymentMethod: formData.paymentMethod,
+          upiApp: formData.paymentMethod === "upi" ? formData.upiApp : null,
+          upiId: formData.paymentMethod === "upi" ? formData.upiId : null,
+        }),
+      });
 
-      // Save order to localStorage
-      const orders = JSON.parse(localStorage.getItem("orders") || "[]");
-      orders.push(order);
-      localStorage.setItem("orders", JSON.stringify(orders));
+      const data = await response.json();
 
-      // Clear cart
-      clearCart();
+      if (!response.ok) {
+        // Handle out of stock errors
+        if (data.outOfStockItems) {
+          setError(
+            `Some products are out of stock: ${data.outOfStockItems.join(", ")}`
+          );
+        } else {
+          setError(data.error || "Order placement failed");
+        }
+        setLoading(false);
+        return;
+      }
 
-      // Navigate to success page
-      navigate("/order-success", { state: { order } });
+      // For COD orders, clear cart and navigate to success
+      if (data.requiresPayment === false) {
+        await clearCart();
+        navigate("/order-success", { state: { order: data.order } });
+        return;
+      }
+
+      // For UPI payments, navigate to payment processing page
+      if (data.requiresPayment === true && data.order) {
+        // Store order ID and payment details
+        sessionStorage.setItem("pendingOrderId", data.order._id);
+        if (data.paymentUrl) {
+          sessionStorage.setItem("paymentUrl", data.paymentUrl);
+        }
+        if (data.qrCode) {
+          sessionStorage.setItem("paymentQrCode", data.qrCode);
+        }
+        
+        // Clear cart before redirecting
+        await clearCart();
+        
+        // Navigate to payment processing page
+        navigate("/payment-process", { state: { order: data.order } });
+        return;
+      }
+
+      // Fallback: navigate to success page
+      await clearCart();
+      navigate("/order-success", { state: { order: data.order } });
     } catch (err) {
-      setError("Order placement failed. Please try again.");
+      console.error("Order placement error:", err);
+      setError(err.message || "Order placement failed. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -260,15 +314,52 @@ const Checkout = () => {
                   </div>
 
                   {formData.paymentMethod === "upi" && (
-                    <div className="ml-7">
-                      <input
-                        type="text"
-                        name="upiId"
-                        value={formData.upiId}
-                        onChange={handleChange}
-                        placeholder="Enter your UPI ID (e.g., name@upi)"
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-                      />
+                    <div className="ml-7 space-y-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Select UPI App *
+                        </label>
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                          {[
+                            { id: "phonepe", name: "PhonePe", icon: "📱" },
+                            { id: "googlepay", name: "Google Pay", icon: "💳" },
+                            { id: "paytm", name: "Paytm", icon: "💵" },
+                            { id: "bhim", name: "BHIM UPI", icon: "🏦" },
+                          ].map((app) => (
+                            <button
+                              key={app.id}
+                              type="button"
+                              onClick={() =>
+                                setFormData({ ...formData, upiApp: app.id })
+                              }
+                              className={`p-3 border-2 rounded-lg text-center transition-colors ${
+                                formData.upiApp === app.id
+                                  ? "border-green-600 bg-green-50"
+                                  : "border-gray-300 hover:border-green-400"
+                              }`}
+                            >
+                              <div className="text-2xl mb-1">{app.icon}</div>
+                              <div className="text-xs font-medium">{app.name}</div>
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          UPI ID (Optional)
+                        </label>
+                        <input
+                          type="text"
+                          name="upiId"
+                          value={formData.upiId}
+                          onChange={handleChange}
+                          placeholder="Enter your UPI ID (e.g., name@paytm)"
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                        />
+                        <p className="text-xs text-gray-500 mt-1">
+                          Leave empty to use selected app's default UPI ID
+                        </p>
+                      </div>
                     </div>
                   )}
 
