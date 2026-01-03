@@ -77,6 +77,7 @@ if (process.env.NODE_ENV === "production") {
   app.use(express.static(distPath));
 
   // Serve index.html for all non-API routes (React Router)
+  // This must be LAST before error handler
   app.get("*", (req, res) => {
     // Don't serve index.html for API routes
     if (req.path.startsWith("/api")) {
@@ -86,7 +87,7 @@ if (process.env.NODE_ENV === "production") {
   });
 }
 
-// Error handling middleware
+// Error handling middleware (must be last)
 app.use((err, req, res, next) => {
   console.error(err.stack);
   res.status(500).json({
