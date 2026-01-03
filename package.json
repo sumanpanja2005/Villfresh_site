@@ -10,7 +10,8 @@
     "preview": "vite preview",
     "server": "node server/index.js",
     "dev:server": "node --watch server/index.js",
-    "seed:products": "node server/scripts/seedProducts.js"
+    "seed:products": "node server/scripts/seedProducts.js",
+    "start": "NODE_ENV=production node server/index.js"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.1.12",

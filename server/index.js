@@ -3,11 +3,16 @@ import cors from "cors";
 import dotenv from "dotenv";
 import mongoose from "mongoose";
 import cookieParser from "cookie-parser";
+import path from "path";
+import { fileURLToPath } from "url";
 import authRoutes from "./routes/auth.js";
 import productRoutes from "./routes/products.js";
 import orderRoutes from "./routes/orders.js";
 import cartRoutes from "./routes/cart.js";
 import paymentRoutes from "./routes/payments.js";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 dotenv.config();
 
@@ -55,6 +60,16 @@ app.use("/api/payments", paymentRoutes);
 app.get("/api/health", (req, res) => {
   res.json({ status: "OK", message: "VILLFRESH API is running" });
 });
+
+// Serve static files from the Vite build (dist folder) in production
+if (process.env.NODE_ENV === "production") {
+  app.use(express.static(path.join(__dirname, "../dist")));
+
+  // SPA fallback - serve index.html for all non-API routes
+  app.get("*", (req, res) => {
+    res.sendFile(path.join(__dirname, "../dist/index.html"));
+  });
+}
 
 // Error handling middleware
 app.use((err, req, res, next) => {
