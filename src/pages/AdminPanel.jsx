@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Plus, Edit3, Trash2, Save, X } from "lucide-react";
 import { useAuth } from "../contexts/AuthContext";
-
-const API_URL = "http://localhost:5000/api";
+import API_URL from "../config/api.js";
 
 const AdminPanel = () => {
   const { user } = useAuth();

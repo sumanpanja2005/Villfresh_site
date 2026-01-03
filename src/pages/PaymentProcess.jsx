@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Loader, CheckCircle, XCircle, Smartphone, ExternalLink } from "lucide-react";
-
-const API_URL = "http://localhost:5000/api";
+import API_URL from "../config/api.js";
 
 const PaymentProcess = () => {
   const location = useLocation();

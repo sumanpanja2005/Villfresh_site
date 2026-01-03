@@ -11,22 +11,23 @@ import orderRoutes from "./routes/orders.js";
 import cartRoutes from "./routes/cart.js";
 import paymentRoutes from "./routes/payments.js";
 
-// ES module equivalent of __dirname
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
 dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 
+// Get __dirname equivalent for ES modules
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
 // Middleware
 // CORS configuration
 // In production (same origin), CORS is less critical, but we keep it for API flexibility
 const corsOptions = {
-  origin: process.env.NODE_ENV === "production" 
-    ? process.env.FRONTEND_URL || true // Allow same origin in production
-    : process.env.FRONTEND_URL || "http://localhost:5173",
+  origin:
+    process.env.NODE_ENV === "production"
+      ? process.env.FRONTEND_URL || true // Allow same origin in production
+      : process.env.FRONTEND_URL || "http://localhost:5173",
   credentials: true, // Allow cookies
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization", "X-VERIFY"],
@@ -67,20 +68,23 @@ app.get("/api/health", (req, res) => {
   res.json({ status: "OK", message: "VILLFRESH API is running" });
 });
 
-// Serve static files from the React app build directory
-// Path: ../dist (one level up from server/ directory)
-const distPath = path.join(__dirname, "..", "dist");
-app.use(express.static(distPath));
+// Serve static files from the Vite build directory (only in production)
+if (process.env.NODE_ENV === "production") {
+  // Path to the dist directory (one level up from server/)
+  const distPath = path.join(__dirname, "..", "dist");
 
-// Catch-all handler: send back React's index.html file for any non-API routes
-// This enables React Router to handle client-side routing
-app.get("*", (req, res) => {
-  // Don't serve index.html for API routes
-  if (req.path.startsWith("/api")) {
-    return res.status(404).json({ error: "API route not found" });
-  }
-  res.sendFile(path.join(distPath, "index.html"));
-});
+  // Serve static assets (JS, CSS, images, etc.)
+  app.use(express.static(distPath));
+
+  // Serve index.html for all non-API routes (React Router)
+  app.get("*", (req, res) => {
+    // Don't serve index.html for API routes
+    if (req.path.startsWith("/api")) {
+      return res.status(404).json({ error: "API route not found" });
+    }
+    res.sendFile(path.join(distPath, "index.html"));
+  });
+}
 
 // Error handling middleware
 app.use((err, req, res, next) => {
@@ -91,7 +95,11 @@ app.use((err, req, res, next) => {
   });
 });
 
-
-app.listen(PORT, '0.0.0.0', () => {
-  console.log(`Server running on port ${PORT}`);
+app.listen(PORT, "0.0.0.0", () => {
+  console.log(`🚀 Server running on port ${PORT}`);
+  if (process.env.NODE_ENV === "production") {
+    console.log(
+      `📦 Serving frontend from: ${path.join(__dirname, "..", "dist")}`
+    );
+  }
 });

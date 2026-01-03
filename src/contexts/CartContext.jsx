@@ -1,7 +1,6 @@
 import React, { createContext, useContext, useReducer, useEffect } from "react";
 import { useAuth } from "./AuthContext";
-
-const API_URL = "http://localhost:5000/api";
+import API_URL from "../config/api.js";
 
 const CartContext = createContext();
 

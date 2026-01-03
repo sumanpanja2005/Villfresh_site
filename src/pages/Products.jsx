@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Search, Filter } from "lucide-react";
 import ProductCard from "../components/ProductCard";
-
-const API_URL = "http://localhost:5000/api";
+import API_URL from "../config/api.js";
 
 const Products = () => {
   const [products, setProducts] = useState([]);
@@ -24,7 +23,7 @@ const Products = () => {
       setLoading(true);
       const response = await fetch(`${API_URL}/products`);
       const data = await response.json();
-      
+
       if (response.ok) {
         setProducts(data.products || []);
         setFilteredProducts(data.products || []);
@@ -45,14 +44,14 @@ const Products = () => {
       filtered = filtered.filter(
         (product) =>
           product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          product.description.toLowerCase().includes(searchTerm.toLowerCase()),
+          product.description.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
 
     // Filter by category
     if (selectedCategory !== "all") {
       filtered = filtered.filter(
-        (product) => product.category === selectedCategory,
+        (product) => product.category === selectedCategory
       );
     }
 
@@ -64,7 +63,7 @@ const Products = () => {
           break;
         case "200-400":
           filtered = filtered.filter(
-            (product) => product.price >= 200 && product.price <= 400,
+            (product) => product.price >= 200 && product.price <= 400
           );
           break;
         case "over-400":
@@ -252,7 +251,10 @@ const Products = () => {
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {filteredProducts.map((product) => (
-                  <ProductCard key={product._id || product.id} product={product} />
+                  <ProductCard
+                    key={product._id || product.id}
+                    product={product}
+                  />
                 ))}
               </div>
             )}

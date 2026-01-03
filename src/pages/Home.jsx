@@ -2,8 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Leaf, Award, Truck, Heart } from "lucide-react";
 import ProductCard from "../components/ProductCard";
-
-const API_URL = "http://localhost:5000/api";
+import API_URL from "../config/api.js";
 
 const Home = () => {
   const [featuredProducts, setFeaturedProducts] = useState([]);

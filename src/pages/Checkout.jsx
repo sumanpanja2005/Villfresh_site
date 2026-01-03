@@ -3,8 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { CreditCard, Truck, MapPin, Phone, Mail, User } from "lucide-react";
 import { useCart } from "../contexts/CartContext";
 import { useAuth } from "../contexts/AuthContext";
-
-const API_URL = "http://localhost:5000/api";
+import API_URL from "../config/api.js";
 
 const Checkout = () => {
   const [formData, setFormData] = useState({

@@ -2,8 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useAuth } from "../contexts/AuthContext";
 import { User, Package, Edit3, Save, X } from "lucide-react";
 import Avatar from "../components/Avatar";
-
-const API_URL = "http://localhost:5000/api";
+import API_URL from "../config/api.js";
 
 const Dashboard = () => {
   const { user, updateProfile, logout } = useAuth();
