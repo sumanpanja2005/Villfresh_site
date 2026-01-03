@@ -58,6 +58,7 @@ const Header = () => {
             <Link
               to="/cart"
               className="relative p-2 text-gray-700 hover:text-green-600 transition-colors"
+              aria-label="Shopping cart"
             >
               <ShoppingCart className="h-6 w-6" />
               {cart.items.length > 0 && (
@@ -103,17 +104,33 @@ const Header = () => {
             )}
           </div>
 
-          {/* Mobile Menu Button */}
-          <button
-            className="md:hidden p-2"
-            onClick={() => setIsMenuOpen(!isMenuOpen)}
-          >
-            {isMenuOpen ? (
-              <X className="h-6 w-6" />
-            ) : (
-              <Menu className="h-6 w-6" />
-            )}
-          </button>
+          {/* Mobile Actions - Cart Icon in Navbar */}
+          <div className="md:hidden flex items-center space-x-2">
+            <Link
+              to="/cart"
+              className="relative p-2 text-gray-700 hover:text-green-600 transition-colors"
+              aria-label="Shopping cart"
+            >
+              <ShoppingCart className="h-6 w-6" />
+              {cart.items.length > 0 && (
+                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-semibold">
+                  {cart.items.reduce((total, item) => total + item.quantity, 0)}
+                </span>
+              )}
+            </Link>
+            {/* Mobile Menu Button */}
+            <button
+              className="p-2"
+              onClick={() => setIsMenuOpen(!isMenuOpen)}
+              aria-label="Toggle menu"
+            >
+              {isMenuOpen ? (
+                <X className="h-6 w-6" />
+              ) : (
+                <Menu className="h-6 w-6" />
+              )}
+            </button>
+          </div>
         </div>
 
         {/* Mobile Navigation */}
@@ -140,18 +157,6 @@ const Header = () => {
                 onClick={() => setIsMenuOpen(false)}
               >
                 About
-              </Link>
-              <Link
-                to="/cart"
-                className="flex items-center space-x-2 text-gray-700 hover:text-green-600 transition-colors"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                <ShoppingCart className="h-5 w-5" />
-                <span>
-                  Cart (
-                  {cart.items.reduce((total, item) => total + item.quantity, 0)}
-                  )
-                </span>
               </Link>
               {user ? (
                 <div className="flex flex-col space-y-2">
