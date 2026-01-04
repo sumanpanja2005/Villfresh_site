@@ -114,10 +114,10 @@ router.post("/", authenticate, async (req, res) => {
       order.paymentStatus = "pending"; // COD payment is pending until delivery
       await order.save();
 
-      // Send order confirmation email for COD
-      if (shippingAddress.email) {
+      // Send order confirmation email for COD (use customer's login email)
+      if (req.user.email) {
         emailService
-          .sendOrderConfirmation(order, shippingAddress.email)
+          .sendOrderConfirmation(order, req.user.email)
           .catch((err) => {
             console.error("Failed to send order confirmation email:", err);
           });

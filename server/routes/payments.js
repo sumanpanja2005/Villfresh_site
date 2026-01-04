@@ -1,5 +1,6 @@
 import express from "express";
 import Order from "../models/Order.js";
+import User from "../models/User.js";
 import paymentService from "../services/paymentService.js";
 import emailService from "../services/emailService.js";
 
@@ -71,6 +72,9 @@ router.post("/webhook", async (req, res) => {
       return res.status(404).json({ error: "Order not found" });
     }
 
+    // Fetch user to get customer's login email
+    const user = await User.findById(order.userId);
+
     // CRITICAL: Only backend decides payment success through webhook verification
     // Frontend never determines payment status - it only displays what backend confirms
     
@@ -95,9 +99,9 @@ router.post("/webhook", async (req, res) => {
         order.paymentTransactionId = transactionId || order.paymentTransactionId;
         await order.save();
 
-        // Send order confirmation email
-        if (order.shippingAddress.email) {
-          emailService.sendOrderConfirmation(order, order.shippingAddress.email).catch(err => {
+        // Send order confirmation email (use customer's login email)
+        if (user && user.email) {
+          emailService.sendOrderConfirmation(order, user.email).catch(err => {
             console.error("Failed to send order confirmation email:", err);
           });
         }
