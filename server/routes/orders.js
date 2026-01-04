@@ -11,7 +11,7 @@ const router = express.Router();
 // Create order
 router.post("/", authenticate, async (req, res) => {
   try {
-    const { items, shippingAddress, paymentMethod, upiApp, upiId } = req.body;
+    const { items, shippingAddress, paymentMethod } = req.body;
 
     // Validate items
     if (!items || !Array.isArray(items) || items.length === 0) {
@@ -19,34 +19,51 @@ router.post("/", authenticate, async (req, res) => {
     }
 
     // Validate shipping address
-    if (!shippingAddress || !shippingAddress.fullName || !shippingAddress.phone || !shippingAddress.address || !shippingAddress.city || !shippingAddress.state || !shippingAddress.pincode) {
-      return res.status(400).json({ error: "Complete shipping address is required" });
+    if (
+      !shippingAddress ||
+      !shippingAddress.fullName ||
+      !shippingAddress.phone ||
+      !shippingAddress.address ||
+      !shippingAddress.city ||
+      !shippingAddress.state ||
+      !shippingAddress.pincode
+    ) {
+      return res
+        .status(400)
+        .json({ error: "Complete shipping address is required" });
     }
 
     // Check stock availability for all products
     const outOfStockItems = [];
     for (const item of items) {
       const productId = item.id || item.productId;
-      
+
       // Try to find product in database if productId is a valid ObjectId
       if (mongoose.Types.ObjectId.isValid(productId)) {
         const product = await Product.findById(productId);
         if (!product) {
-          outOfStockItems.push({ name: item.name, reason: "Product not found" });
+          outOfStockItems.push({
+            name: item.name,
+            reason: "Product not found",
+          });
         } else if (!product.inStock) {
           outOfStockItems.push({ name: product.name, reason: "Out of stock" });
         }
       } else {
         // If productId is not a valid ObjectId, we can't verify stock
         // In production, you might want to handle this differently
-        console.warn(`Product ID ${productId} is not a valid ObjectId, skipping stock check`);
+        console.warn(
+          `Product ID ${productId} is not a valid ObjectId, skipping stock check`
+        );
       }
     }
 
     if (outOfStockItems.length > 0) {
       return res.status(400).json({
         error: "Some products are out of stock",
-        outOfStockItems: outOfStockItems.map(item => `${item.name}: ${item.reason}`),
+        outOfStockItems: outOfStockItems.map(
+          (item) => `${item.name}: ${item.reason}`
+        ),
       });
     }
 
@@ -54,7 +71,7 @@ router.post("/", authenticate, async (req, res) => {
     const orderItems = items.map((item) => {
       const productId = item.id || item.productId;
       return {
-        productId: mongoose.Types.ObjectId.isValid(productId) 
+        productId: mongoose.Types.ObjectId.isValid(productId)
           ? new mongoose.Types.ObjectId(productId)
           : null,
         name: item.name,
@@ -84,7 +101,6 @@ router.post("/", authenticate, async (req, res) => {
       shippingAddress,
       paymentMethod,
       paymentGateway,
-      upiId: paymentMethod === "upi" ? upiId : null,
       status: "pending",
       paymentStatus: "pending",
       estimatedDelivery: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000),
@@ -100,9 +116,11 @@ router.post("/", authenticate, async (req, res) => {
 
       // Send order confirmation email for COD
       if (shippingAddress.email) {
-        emailService.sendOrderConfirmation(order, shippingAddress.email).catch(err => {
-          console.error("Failed to send order confirmation email:", err);
-        });
+        emailService
+          .sendOrderConfirmation(order, shippingAddress.email)
+          .catch((err) => {
+            console.error("Failed to send order confirmation email:", err);
+          });
       }
 
       return res.status(201).json({
@@ -115,15 +133,14 @@ router.post("/", authenticate, async (req, res) => {
     // For UPI payments, initiate payment
     if (paymentMethod === "upi") {
       try {
-        // Use selected UPI app or UPI ID
-        const upiTarget = upiApp || upiId || null;
-        
+        // Initiate payment with standard UPI intent flow (targetApp: 'ALL')
+        // This will automatically redirect to any available UPI app
         const paymentResponse = await paymentService.initiatePayment({
           orderId: order._id.toString(),
           amount: totalWithTax,
           userId: req.user._id,
           phone: shippingAddress.phone,
-          upiId: upiTarget, // Can be app name (phonepe, googlepay) or UPI ID (name@paytm)
+          upiId: null, // No specific app or UPI ID - let PhonePe handle app selection
         });
 
         // Update order with payment transaction details
@@ -234,7 +251,6 @@ router.put("/:id/status", authenticate, async (req, res) => {
   }
 });
 
-
 // Check payment status endpoint (for frontend polling)
 router.get("/:id/payment-status", authenticate, async (req, res) => {
   try {
@@ -272,16 +288,19 @@ router.get("/:id/payment-status", authenticate, async (req, res) => {
         // Payment confirmation ONLY happens through webhook verification
         // This endpoint only returns current status, never updates to "paid"
         // Webhook is the single source of truth for payment success
-        
+
         // Only update to "failed" if webhook hasn't confirmed it yet
         // Never update to "paid" here - only webhook can do that
-        if (paymentStatus.state === "FAILED" && order.paymentStatus === "pending") {
+        if (
+          paymentStatus.state === "FAILED" &&
+          order.paymentStatus === "pending"
+        ) {
           // Mark as failed only if still pending (webhook might not have arrived yet)
           // But don't mark as paid - wait for webhook
           order.paymentStatus = "failed";
           await order.save();
         }
-        
+
         // Note: If paymentStatus.state === "SUCCESS", we still don't update here
         // We wait for webhook verification to confirm payment
 
