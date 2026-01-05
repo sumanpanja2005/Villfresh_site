@@ -21,7 +21,7 @@ const Footer = () => {
                 {/* <Wheat className="h-6 w-6 text-white" /> */}
                 <div className="bg-white p-1 rounded-full h-10 w-10 flex items-center justify-center">
                   <img
-                    src="https://i.ibb.co/3q7Tkgc/IMG-20250712-WA0000.jpg"
+                    src="https://i.ibb.co/3q7Tkgc/IMG-20260712-WA0000.jpg"
                     alt="VILLFRESH Logo"
                     className="h-10 w-10 rounded-full object-cover"
                   />
@@ -147,7 +147,7 @@ const Footer = () => {
 
         <div className="border-t border-gray-700 mt-8 pt-6 text-center">
           <p className="text-gray-300">
-            © 2025 VILLFRESH. All rights reserved. | Made with ❤️ for healthy
+            © 2026 VILLFRESH. All rights reserved. | Made with ❤️ for healthy
             living
           </p>
         </div>

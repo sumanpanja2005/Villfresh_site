@@ -21,37 +21,43 @@ const Header = () => {
       <div className="container mx-auto px-1 py-1">
         <div className="flex items-center justify-between">
           {/* Logo */}
-          <Link to="/" className="flex items-center space-x-3 hover:opacity-90 transition-opacity">
+          <Link
+            to="/"
+            className="flex items-center space-x-3 hover:opacity-90 transition-opacity"
+          >
             <img
-              src="https://i.ibb.co/3q7Tkgc/IMG-20250712-WA0000.jpg"
+              src="https://i.ibb.co/3q7Tkgc/IMG-20260712-WA0000.jpg"
               alt="VILLFRESH Logo"
               className="h-16 w-16 md:h-20 md:w-20 rounded-full object-cover border-2 border-green-600 shadow-md"
             />
-            <span className="text-2xl md:text-4xl font-bold text-green-800">VILLFRESH</span>
+            <span className="text-2xl md:text-4xl font-bold text-green-800">
+              VILLFRESH
+            </span>
           </Link>
 
           {/* Desktop Navigation */}
-         <div
-         className="text-xl"> <nav className="hidden md:flex items-center space-x-18">
-            <Link
-              to="/"
-              className="text-gray-700 hover:text-green-600 transition-colors"
-            >
-              Home
-            </Link>
-            <Link
-              to="/products"
-              className="text-gray-700 hover:text-green-600 transition-colors"
-            >
-              Products
-            </Link>
-            <Link
-              to="/about"
-              className="text-gray-700 hover:text-green-600 transition-colors"
-            >
-              About
-            </Link>
-          </nav>
+          <div className="text-xl">
+            {" "}
+            <nav className="hidden md:flex items-center space-x-18">
+              <Link
+                to="/"
+                className="text-gray-700 hover:text-green-600 transition-colors"
+              >
+                Home
+              </Link>
+              <Link
+                to="/products"
+                className="text-gray-700 hover:text-green-600 transition-colors"
+              >
+                Products
+              </Link>
+              <Link
+                to="/about"
+                className="text-gray-700 hover:text-green-600 transition-colors"
+              >
+                About
+              </Link>
+            </nav>
           </div>
           {/* Desktop Actions */}
           <div className="hidden md:flex items-center space-x-4">
