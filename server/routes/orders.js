@@ -188,30 +188,7 @@ router.get("/my-orders", authenticate, async (req, res) => {
   }
 });
 
-// Get single order
-router.get("/:id", authenticate, async (req, res) => {
-  try {
-    const order = await Order.findById(req.params.id);
-
-    if (!order) {
-      return res.status(404).json({ error: "Order not found" });
-    }
-
-    // Check if user owns this order or is admin
-    if (
-      order.userId.toString() !== req.user._id.toString() &&
-      req.user.role !== "admin"
-    ) {
-      return res.status(403).json({ error: "Access denied" });
-    }
-
-    res.json({ order });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
-
-// Get all orders (Admin only)
+// Get all orders (Admin only) - Must come before /:id route
 router.get("/", authenticate, async (req, res) => {
   try {
     if (req.user.role !== "admin") {
@@ -219,7 +196,7 @@ router.get("/", authenticate, async (req, res) => {
     }
 
     const orders = await Order.find()
-      .populate("userId", "name email")
+      .populate("userId", "name email phone")
       .sort({ createdAt: -1 });
     res.json({ orders, count: orders.length });
   } catch (error) {
@@ -227,7 +204,7 @@ router.get("/", authenticate, async (req, res) => {
   }
 });
 
-// Update order status (Admin only)
+// Update order status (Admin only) - Specific routes must come before generic /:id
 router.put("/:id/status", authenticate, async (req, res) => {
   try {
     if (req.user.role !== "admin") {
@@ -239,7 +216,7 @@ router.put("/:id/status", authenticate, async (req, res) => {
       req.params.id,
       { status },
       { new: true }
-    );
+    ).populate("userId", "name email phone");
 
     if (!order) {
       return res.status(404).json({ error: "Order not found" });
@@ -251,7 +228,109 @@ router.put("/:id/status", authenticate, async (req, res) => {
   }
 });
 
-// Check payment status endpoint (for frontend polling)
+// Mark order as delivery completed (Admin only) - Specific routes must come before generic /:id
+router.put("/:id/delivery-complete", authenticate, async (req, res) => {
+  try {
+    if (req.user.role !== "admin") {
+      return res.status(403).json({ error: "Admin access required" });
+    }
+
+    const order = await Order.findById(req.params.id);
+
+    if (!order) {
+      return res.status(404).json({ error: "Order not found" });
+    }
+
+    // Check if already completed
+    if (order.deliveryStatus === "completed") {
+      return res
+        .status(400)
+        .json({ error: "Order delivery already completed" });
+    }
+
+    // Check if order is cancelled
+    if (order.status === "cancelled") {
+      return res
+        .status(400)
+        .json({ error: "Cannot mark cancelled order as delivery completed" });
+    }
+
+    // Update delivery status and timestamp
+    order.deliveryStatus = "completed";
+    order.deliveredAt = new Date();
+
+    // For COD orders, automatically mark payment status as "paid" when delivery is completed
+    if (order.paymentMethod === "cod" && order.paymentStatus === "pending") {
+      order.paymentStatus = "paid";
+    }
+
+    await order.save();
+
+    // Populate user details before sending response
+    await order.populate("userId", "name email phone");
+
+    res.json({
+      message: "Order marked as delivery completed",
+      order,
+    });
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
+// Cancel order (Admin only) - Specific routes must come before generic /:id
+router.put("/:id/cancel", authenticate, async (req, res) => {
+  try {
+    if (req.user.role !== "admin") {
+      return res.status(403).json({ error: "Admin access required" });
+    }
+
+    const order = await Order.findById(req.params.id);
+
+    if (!order) {
+      return res.status(404).json({ error: "Order not found" });
+    }
+
+    // Check if already cancelled
+    if (order.status === "cancelled") {
+      return res.status(400).json({ error: "Order is already cancelled" });
+    }
+
+    // Check if delivery is already completed
+    if (order.deliveryStatus === "completed") {
+      return res
+        .status(400)
+        .json({ error: "Cannot cancel order that is already delivered" });
+    }
+
+    // Update order status and delivery status to cancelled
+    order.status = "cancelled";
+    order.deliveryStatus = "cancelled";
+    order.cancelledAt = new Date();
+
+    // Handle payment status based on payment method
+    if (order.paymentMethod === "cod") {
+      order.paymentStatus = "cancelled";
+    } else if (order.paymentStatus === "paid") {
+      // For UPI/paid orders, mark as refunded
+      order.paymentStatus = "refunded";
+    }
+
+    await order.save();
+
+    // Populate user details before sending response
+    await order.populate("userId", "name email phone");
+
+    res.json({
+      message: "Order cancelled successfully",
+      order,
+    });
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
+// Check payment status endpoint (for frontend polling) - Specific routes must come before generic /:id
 router.get("/:id/payment-status", authenticate, async (req, res) => {
   try {
     const order = await Order.findById(req.params.id);
@@ -328,6 +407,29 @@ router.get("/:id/payment-status", authenticate, async (req, res) => {
       orderStatus: order.status,
       order,
     });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Get single order - This must be LAST as it's the most generic route
+router.get("/:id", authenticate, async (req, res) => {
+  try {
+    const order = await Order.findById(req.params.id);
+
+    if (!order) {
+      return res.status(404).json({ error: "Order not found" });
+    }
+
+    // Check if user owns this order or is admin
+    if (
+      order.userId.toString() !== req.user._id.toString() &&
+      req.user.role !== "admin"
+    ) {
+      return res.status(403).json({ error: "Access denied" });
+    }
+
+    res.json({ order });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

@@ -16,6 +16,7 @@ import PaymentProcess from "./pages/PaymentProcess";
 import OrderSuccess from "./pages/OrderSuccess";
 import Dashboard from "./pages/Dashboard";
 import AdminPanel from "./pages/AdminPanel";
+import AdminOrders from "./pages/AdminOrders";
 
 function App() {
   return (
@@ -37,6 +38,7 @@ function App() {
                 <Route path="/order-success" element={<OrderSuccess />} />
                 <Route path="/dashboard" element={<Dashboard />} />
                 <Route path="/admin" element={<AdminPanel />} />
+                <Route path="/admin/orders" element={<AdminOrders />} />
               </Routes>
             </main>
             <Footer />
