@@ -3,6 +3,7 @@ import { useAuth } from "../contexts/AuthContext";
 import { User, Package, Edit3, Save, X } from "lucide-react";
 import Avatar from "../components/Avatar";
 import API_URL from "../config/api.js";
+import { getAuthHeaders } from "../utils/authHeaders.js";
 
 const Dashboard = () => {
   const { user, updateProfile, logout } = useAuth();
@@ -28,6 +29,7 @@ const Dashboard = () => {
 
       const response = await fetch(`${API_URL}/orders/my-orders`, {
         method: "GET",
+        headers: getAuthHeaders(),
         credentials: "include", // Include cookies
       });
 

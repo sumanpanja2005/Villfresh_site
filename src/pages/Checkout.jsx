@@ -4,6 +4,7 @@ import { CreditCard, Truck, MapPin, Phone, Mail, User } from "lucide-react";
 import { useCart } from "../contexts/CartContext";
 import { useAuth } from "../contexts/AuthContext";
 import API_URL from "../config/api.js";
+import { getAuthHeaders } from "../utils/authHeaders.js";
 
 const Checkout = () => {
   const [formData, setFormData] = useState({
@@ -74,9 +75,9 @@ const Checkout = () => {
       // Create order via API
       const response = await fetch(`${API_URL}/orders`, {
         method: "POST",
-        headers: {
+        headers: getAuthHeaders({
           "Content-Type": "application/json",
-        },
+        }),
         credentials: "include", // Include cookies
         body: JSON.stringify({
           items: cart.items.map((item) => ({

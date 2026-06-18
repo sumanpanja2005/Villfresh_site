@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
 import dotenv from "dotenv";
 import Product from "../models/Product.js";
+import { getMongoUri } from "../utils/mongoUri.js";
 
 dotenv.config();
 
@@ -105,11 +106,10 @@ const products = [
 
 const seedProducts = async () => {
   try {
-    const MONGODB_URI =
-      process.env.MONGODB_URI || "mongodb://localhost:27017/villfresh";
+    const MONGODB_URI = getMongoUri();
 
     await mongoose.connect(MONGODB_URI);
-    console.log("✅ Connected to MongoDB");
+    console.log(`✅ Connected to MongoDB (${mongoose.connection.name})`);
 
     // Clear existing products
     await Product.deleteMany({});

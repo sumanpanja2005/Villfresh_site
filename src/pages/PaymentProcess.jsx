@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Loader, CheckCircle, XCircle, Smartphone, ExternalLink } from "lucide-react";
 import API_URL from "../config/api.js";
+import { getAuthHeaders } from "../utils/authHeaders.js";
 
 const PaymentProcess = () => {
   const location = useLocation();
@@ -29,6 +30,7 @@ const PaymentProcess = () => {
   const fetchOrderDetails = async (orderId) => {
     try {
       const response = await fetch(`${API_URL}/orders/${orderId}`, {
+        headers: getAuthHeaders(),
         credentials: "include",
       });
 
@@ -109,6 +111,7 @@ const PaymentProcess = () => {
     const pollInterval = setInterval(async () => {
       try {
         const response = await fetch(`${API_URL}/orders/${order._id}/payment-status`, {
+          headers: getAuthHeaders(),
           credentials: "include",
         });
 

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Plus, Edit3, Trash2, Save, X } from "lucide-react";
 import { useAuth } from "../contexts/AuthContext";
 import API_URL from "../config/api.js";
+import { getAuthHeaders } from "../utils/authHeaders.js";
 
 const AdminPanel = () => {
   const { user } = useAuth();
@@ -30,6 +31,7 @@ const AdminPanel = () => {
     try {
       setLoading(true);
       const response = await fetch(`${API_URL}/products`, {
+        headers: getAuthHeaders(),
         credentials: "include",
       });
       const data = await response.json();
@@ -73,9 +75,9 @@ const AdminPanel = () => {
           `${API_URL}/products/${editingProduct._id || editingProduct.id}`,
           {
             method: "PUT",
-            headers: {
+            headers: getAuthHeaders({
               "Content-Type": "application/json",
-            },
+            }),
             credentials: "include",
             body: JSON.stringify({
               ...formData,
@@ -97,9 +99,9 @@ const AdminPanel = () => {
         // Add new product
         const response = await fetch(`${API_URL}/products`, {
           method: "POST",
-          headers: {
+          headers: getAuthHeaders({
             "Content-Type": "application/json",
-          },
+          }),
           credentials: "include",
           body: JSON.stringify({
             ...formData,
@@ -164,6 +166,7 @@ const AdminPanel = () => {
     try {
       const response = await fetch(`${API_URL}/products/${productId}`, {
         method: "DELETE",
+        headers: getAuthHeaders(),
         credentials: "include",
       });
 

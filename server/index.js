@@ -10,6 +10,7 @@ import productRoutes from "./routes/products.js";
 import orderRoutes from "./routes/orders.js";
 import cartRoutes from "./routes/cart.js";
 import paymentRoutes from "./routes/payments.js";
+import { getMongoUri } from "./utils/mongoUri.js";
 
 dotenv.config();
 
@@ -43,13 +44,12 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
 // MongoDB Connection
-const MONGODB_URI =
-  process.env.MONGODB_URI || "mongodb://localhost:27017/villfresh";
+const MONGODB_URI = getMongoUri();
 
 mongoose
   .connect(MONGODB_URI)
   .then(() => {
-    console.log("✅ Connected to MongoDB Atlas");
+    console.log(`✅ Connected to MongoDB (${mongoose.connection.name})`);
   })
   .catch((error) => {
     console.error("❌ MongoDB connection error:", error);

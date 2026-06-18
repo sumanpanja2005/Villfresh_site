@@ -1,5 +1,6 @@
 import jwt from "jsonwebtoken";
 import User from "../models/User.js";
+import { getCookieOptions } from "../utils/cookieOptions.js";
 
 const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key-change-in-production";
 
@@ -35,14 +36,7 @@ export const authenticate = async (req, res, next) => {
     const user = await User.findById(decoded.userId);
 
     if (!user) {
-      // Clear invalid cookie
-      const isProduction = process.env.NODE_ENV === 'production';
-      res.clearCookie('token', {
-        httpOnly: true,
-        secure: isProduction,
-        sameSite: isProduction ? 'None' : 'Lax',
-        path: '/',
-      });
+      res.clearCookie("token", getCookieOptions());
       return res.status(401).json({ error: "Session expired. Please login again." });
     }
 
@@ -64,14 +58,7 @@ export const authenticate = async (req, res, next) => {
       errorMessage = "Session not active yet. Please login again.";
     }
     
-    // Clear invalid cookie
-    const isProduction = process.env.NODE_ENV === 'production';
-    res.clearCookie('token', {
-      httpOnly: true,
-      secure: isProduction,
-      sameSite: isProduction ? 'None' : 'Lax',
-      path: '/',
-    });
+    res.clearCookie("token", getCookieOptions());
     
     res.status(401).json({ error: errorMessage });
   }

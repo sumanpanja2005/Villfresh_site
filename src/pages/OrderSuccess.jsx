@@ -10,6 +10,7 @@ import {
   XCircle,
 } from "lucide-react";
 import API_URL from "../config/api.js";
+import { getAuthHeaders } from "../utils/authHeaders.js";
 
 const OrderSuccess = () => {
   const location = useLocation();
@@ -39,6 +40,7 @@ const OrderSuccess = () => {
     try {
       setLoading(true);
       const response = await fetch(`${API_URL}/orders/${orderId}`, {
+        headers: getAuthHeaders(),
         credentials: "include",
       });
 
@@ -69,6 +71,7 @@ const OrderSuccess = () => {
     try {
       setCheckingPayment(true);
       const response = await fetch(`${API_URL}/orders/${orderId}/payment-status`, {
+        headers: getAuthHeaders(),
         credentials: "include",
       });
 
