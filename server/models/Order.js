@@ -85,7 +85,7 @@ const orderSchema = new mongoose.Schema(
     },
     paymentStatus: {
       type: String,
-      enum: ['pending', 'paid', 'failed', 'refunded'],
+      enum: ['pending', 'paid', 'failed', 'refunded', 'cancelled'],
       default: 'pending',
     },
     paymentGateway: {
@@ -108,6 +108,19 @@ const orderSchema = new mongoose.Schema(
     estimatedDelivery: {
       type: Date,
       default: () => new Date(Date.now() + 3 * 24 * 60 * 60 * 1000), // 3 days from now
+    },
+    deliveryStatus: {
+      type: String,
+      enum: ['pending', 'completed', 'cancelled'],
+      default: 'pending',
+    },
+    deliveredAt: {
+      type: Date,
+      default: null,
+    },
+    cancelledAt: {
+      type: Date,
+      default: null,
     },
   },
   {

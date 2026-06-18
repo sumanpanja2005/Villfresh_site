@@ -1,20 +1,48 @@
-import nodemailer from 'nodemailer';
+import nodemailer from "nodemailer";
 
 /**
  * Email Service for sending order confirmation emails
  */
 class EmailService {
   constructor() {
-    // Email configuration from environment variables
-    this.transporter = nodemailer.createTransport({
-      host: process.env.SMTP_HOST || 'smtp.gmail.com',
-      port: parseInt(process.env.SMTP_PORT || '587'),
-      secure: process.env.SMTP_SECURE === 'true', // true for 465, false for other ports
+    // Store configuration, but create transporter lazily after validation
+    this.config = {
+      host: process.env.SMTP_HOST || "smtp.gmail.com",
+      port: parseInt(process.env.SMTP_PORT || "587"),
+      secure: process.env.SMTP_SECURE === "true", // true for 465, false for other ports
       auth: {
         user: process.env.SMTP_USER,
         pass: process.env.SMTP_PASS,
       },
-    });
+    };
+    this.transporter = null;
+  }
+
+  /**
+   * Get or create the transporter instance
+   * Validates credentials before creating transporter
+   */
+  getTransporter() {
+    // Update config with current environment variables (in case they were loaded after construction)
+    this.config.auth.user = process.env.SMTP_USER;
+    this.config.auth.pass = process.env.SMTP_PASS;
+    this.config.host = process.env.SMTP_HOST || "smtp.gmail.com";
+    this.config.port = parseInt(process.env.SMTP_PORT || "587");
+    this.config.secure = process.env.SMTP_SECURE === "true";
+
+    // Validate credentials first (check process.env directly for reliability)
+    if (!process.env.SMTP_USER || !process.env.SMTP_PASS) {
+      throw new Error(
+        "SMTP credentials are not configured. Please set SMTP_USER and SMTP_PASS environment variables."
+      );
+    }
+
+    // Create transporter if not already created
+    if (!this.transporter) {
+      this.transporter = nodemailer.createTransport(this.config);
+    }
+
+    return this.transporter;
   }
 
   /**
@@ -24,26 +52,40 @@ class EmailService {
    */
   async sendOrderConfirmation(order, recipientEmail) {
     try {
+      // Validate credentials before attempting to send
       if (!process.env.SMTP_USER || !process.env.SMTP_PASS) {
-        console.warn('SMTP credentials not configured. Skipping email send.');
-        return { success: false, message: 'Email service not configured' };
+        console.warn("⚠️ SMTP credentials missing — email sending will fail");
+        return { success: false, message: "Email service not configured" };
       }
+
+      // Get validated transporter
+      const transporter = this.getTransporter();
 
       const orderItemsHtml = order.items
         .map(
           (item) => `
         <tr>
           <td style="padding: 10px; border-bottom: 1px solid #eee;">
-            <img src="${item.image}" alt="${item.name}" style="width: 60px; height: 60px; object-fit: cover; border-radius: 4px;" />
+            <img src="${item.image}" alt="${
+            item.name
+          }" style="width: 60px; height: 60px; object-fit: cover; border-radius: 4px;" />
           </td>
-          <td style="padding: 10px; border-bottom: 1px solid #eee;">${item.name}</td>
-          <td style="padding: 10px; border-bottom: 1px solid #eee; text-align: center;">${item.quantity}</td>
-          <td style="padding: 10px; border-bottom: 1px solid #eee; text-align: right;">₹${item.price}</td>
-          <td style="padding: 10px; border-bottom: 1px solid #eee; text-align: right;">₹${item.price * item.quantity}</td>
+          <td style="padding: 10px; border-bottom: 1px solid #eee;">${
+            item.name
+          }</td>
+          <td style="padding: 10px; border-bottom: 1px solid #eee; text-align: center;">${
+            item.quantity
+          }</td>
+          <td style="padding: 10px; border-bottom: 1px solid #eee; text-align: right;">₹${
+            item.price
+          }</td>
+          <td style="padding: 10px; border-bottom: 1px solid #eee; text-align: right;">₹${
+            item.price * item.quantity
+          }</td>
         </tr>
       `
         )
-        .join('');
+        .join("");
 
       const htmlContent = `
       <!DOCTYPE html>
@@ -66,9 +108,13 @@ class EmailService {
             <div style="background-color: white; padding: 20px; border-radius: 8px; margin: 20px 0;">
               <h2 style="color: #22c55e; margin-top: 0;">Order Details</h2>
               <p><strong>Order ID:</strong> #${order._id}</p>
-              <p><strong>Order Date:</strong> ${new Date(order.createdAt).toLocaleDateString()}</p>
+              <p><strong>Order Date:</strong> ${new Date(
+                order.createdAt
+              ).toLocaleDateString()}</p>
               <p><strong>Total Amount:</strong> ₹${order.total}</p>
-              <p><strong>Payment Status:</strong> <span style="color: #22c55e; font-weight: bold;">${order.paymentStatus === 'paid' ? 'Paid' : 'Pending'}</span></p>
+              <p><strong>Payment Status:</strong> <span style="color: #22c55e; font-weight: bold;">${
+                order.paymentStatus === "paid" ? "Paid" : "Pending"
+              }</span></p>
             </div>
             
             <div style="background-color: white; padding: 20px; border-radius: 8px; margin: 20px 0;">
@@ -89,7 +135,9 @@ class EmailService {
                 <tfoot>
                   <tr>
                     <td colspan="4" style="padding: 10px; text-align: right; font-weight: bold; border-top: 2px solid #ddd;">Total:</td>
-                    <td style="padding: 10px; text-align: right; font-weight: bold; border-top: 2px solid #ddd;">₹${order.total}</td>
+                    <td style="padding: 10px; text-align: right; font-weight: bold; border-top: 2px solid #ddd;">₹${
+                      order.total
+                    }</td>
                   </tr>
                 </tfoot>
               </table>
@@ -101,10 +149,14 @@ class EmailService {
               <p>
                 ${order.shippingAddress.fullName}<br>
                 ${order.shippingAddress.address}<br>
-                ${order.shippingAddress.city}, ${order.shippingAddress.state} - ${order.shippingAddress.pincode}<br>
+                ${order.shippingAddress.city}, ${
+        order.shippingAddress.state
+      } - ${order.shippingAddress.pincode}<br>
                 Phone: ${order.shippingAddress.phone}
               </p>
-              <p><strong>Estimated Delivery:</strong> ${new Date(order.estimatedDelivery).toLocaleDateString()}</p>
+              <p><strong>Estimated Delivery:</strong> ${new Date(
+                order.estimatedDelivery
+              ).toLocaleDateString()}</p>
             </div>
             
             <p style="margin-top: 30px;">We'll send you tracking information once your order ships.</p>
@@ -126,15 +178,14 @@ class EmailService {
         html: htmlContent,
       };
 
-      const info = await this.transporter.sendMail(mailOptions);
-      console.log('Order confirmation email sent:', info.messageId);
+      const info = await transporter.sendMail(mailOptions);
+      console.log("Order confirmation email sent:", info.messageId);
       return { success: true, messageId: info.messageId };
     } catch (error) {
-      console.error('Error sending order confirmation email:', error);
+      console.error("Error sending order confirmation email:", error);
       return { success: false, error: error.message };
     }
   }
 }
 
 export default new EmailService();
-

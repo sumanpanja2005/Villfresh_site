@@ -16,8 +16,6 @@ const Checkout = () => {
     state: "",
     pincode: "",
     paymentMethod: "upi",
-    upiApp: "", // Selected UPI app (phonepe, googlepay, paytm, etc.)
-    upiId: "", // Optional UPI ID if user wants to specify
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -49,12 +47,6 @@ const Checkout = () => {
         !formData.pincode
       ) {
         setError("Please fill in all required fields");
-        setLoading(false);
-        return;
-      }
-
-      if (formData.paymentMethod === "upi" && !formData.upiApp) {
-        setError("Please select a UPI app");
         setLoading(false);
         return;
       }
@@ -97,8 +89,6 @@ const Checkout = () => {
             pincode: formData.pincode,
           },
           paymentMethod: formData.paymentMethod,
-          upiApp: formData.paymentMethod === "upi" ? formData.upiApp : null,
-          upiId: formData.paymentMethod === "upi" ? formData.upiId : null,
         }),
       });
 
@@ -313,55 +303,6 @@ const Checkout = () => {
                     </label>
                   </div>
 
-                  {formData.paymentMethod === "upi" && (
-                    <div className="ml-7 space-y-4">
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Select UPI App *
-                        </label>
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                          {[
-                            { id: "phonepe", name: "PhonePe", icon: "📱" },
-                            { id: "googlepay", name: "Google Pay", icon: "💳" },
-                            { id: "paytm", name: "Paytm", icon: "💵" },
-                            { id: "bhim", name: "BHIM UPI", icon: "🏦" },
-                          ].map((app) => (
-                            <button
-                              key={app.id}
-                              type="button"
-                              onClick={() =>
-                                setFormData({ ...formData, upiApp: app.id })
-                              }
-                              className={`p-3 border-2 rounded-lg text-center transition-colors ${
-                                formData.upiApp === app.id
-                                  ? "border-green-600 bg-green-50"
-                                  : "border-gray-300 hover:border-green-400"
-                              }`}
-                            >
-                              <div className="text-2xl mb-1">{app.icon}</div>
-                              <div className="text-xs font-medium">{app.name}</div>
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          UPI ID (Optional)
-                        </label>
-                        <input
-                          type="text"
-                          name="upiId"
-                          value={formData.upiId}
-                          onChange={handleChange}
-                          placeholder="Enter your UPI ID (e.g., name@paytm)"
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-                        />
-                        <p className="text-xs text-gray-500 mt-1">
-                          Leave empty to use selected app's default UPI ID
-                        </p>
-                      </div>
-                    </div>
-                  )}
 
                   <div className="flex items-center space-x-3">
                     <input

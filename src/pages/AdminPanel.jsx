@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { Plus, Edit3, Trash2, Save, X } from "lucide-react";
+import { Plus, Edit3, Trash2, Save, X, Package } from "lucide-react";
+import { Link } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import API_URL from "../config/api.js";
 import { getAuthHeaders } from "../utils/authHeaders.js";
@@ -214,8 +215,26 @@ const AdminPanel = () => {
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="container mx-auto px-4">
+        {/* Navigation Tabs */}
+        <div className="mb-6 border-b border-gray-200">
+          <div className="flex space-x-4">
+            <Link
+              to="/admin"
+              className="px-4 py-2 text-sm font-medium text-green-600 border-b-2 border-green-600"
+            >
+              Products Management
+            </Link>
+            <Link
+              to="/admin/orders"
+              className="px-4 py-2 text-sm font-medium text-gray-500 hover:text-gray-700"
+            >
+              Orders Management
+            </Link>
+          </div>
+        </div>
+
         <div className="flex justify-between items-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-800">Admin Panel</h1>
+          <h1 className="text-3xl font-bold text-gray-800">Products Management</h1>
           <button
             onClick={startAdd}
             className="bg-green-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-green-700 transition-colors flex items-center space-x-2"

@@ -1,10 +1,19 @@
-import express from "express";
-import cors from "cors";
+// Load environment variables FIRST before any other imports
 import dotenv from "dotenv";
-import mongoose from "mongoose";
-import cookieParser from "cookie-parser";
 import path from "path";
 import { fileURLToPath } from "url";
+
+// Get __dirname equivalent for ES modules (needed for path resolution)
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// Load .env file from project root (one level up from server/)
+dotenv.config({ path: path.join(__dirname, "..", ".env") });
+
+import express from "express";
+import cors from "cors";
+import mongoose from "mongoose";
+import cookieParser from "cookie-parser";
 import authRoutes from "./routes/auth.js";
 import productRoutes from "./routes/products.js";
 import orderRoutes from "./routes/orders.js";
@@ -12,14 +21,8 @@ import cartRoutes from "./routes/cart.js";
 import paymentRoutes from "./routes/payments.js";
 import { getMongoUri } from "./utils/mongoUri.js";
 
-dotenv.config();
-
 const app = express();
 const PORT = process.env.PORT || 5000;
-
-// Get __dirname equivalent for ES modules
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 
 // Middleware
 // CORS configuration
