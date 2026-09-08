@@ -21,7 +21,7 @@ const Footer = () => {
                 {/* <Wheat className="h-6 w-6 text-white" /> */}
                 <div className="bg-white p-1 rounded-full h-10 w-10 flex items-center justify-center">
                   <img
-                    src="https://i.ibb.co/3q7Tkgc/IMG-20260712-WA0000.jpg"
+                    src="https://i.postimg.cc/Bn9kd46H/Whats-App-Image-2026-09-08-at-9-58-48-PM.jpg"
                     alt="VILLFRESH Logo"
                     className="h-10 w-10 rounded-full object-cover"
                   />
